@@ -54,6 +54,8 @@
     };
 
     ko.dependentObservable(function() {
+        if (!this.selectedFolder())
+            return;
         var mailsDataUrl = "@Url.Action("MailData")?folder=" + encodeURIComponent(this.selectedFolder());
         $.post(mailsDataUrl, this.currentPageMails); // Gets JSON from mailsDataUrl, and writes it to currentPageMails
     }, viewModel);
