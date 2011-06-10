@@ -1,0 +1,58 @@
+﻿@{ ViewBag.Title = "Home Page"; }
+<script src="/Scripts/knockout-1.2.1.js" type="text/javascript"></script>
+
+<p>First name: <input data-bind="value: firstName" /></p>
+<p>Last name: <input data-bind="value: lastName" /></p>
+<p>Full name: <span data-bind="text: fullName"></span></p>
+
+<h2>Friends (<span data-bind="text: friends().length"></span>)</h2>
+<ul data-bind="template: {name:'friendsTemplate', foreach: friends}"></ul>
+<script id="friendsTemplate" type="text/html">
+    <li>
+        <input data-bind="value: name" />
+        <label><input type="checkbox" data-bind="checked: isOnTwitter" /> Is on Twitter</label>
+        <button data-bind="click: function() { viewModel.removeFriend($data) }">Remove</button>
+        <input data-bind="value: twitterName, visible: isOnTwitter" />
+    </li>
+</script>
+
+<button data-bind="click: addFriend, enable: friends().length < 5">Add</button>
+<button data-bind="click: save">Save</button>
+
+<script type="text/javascript">
+    function friend(name) {
+        return {
+            name: ko.observable(name),
+            isOnTwitter: ko.observable(false),
+            twitterName: ko.observable()
+        };
+    }
+
+    var viewModel = {
+        // Data
+        firstName: ko.observable("Boris"),
+        lastName: ko.observable("Johnson"),
+        friends: ko.observableArray([
+            new friend("Steve"),
+            new friend("Scott")
+        ]),
+
+        // Operations
+        addFriend: function () { this.friends.push(new friend("Another")) },
+        removeFriend: function (friend) { this.friends.remove(friend) },
+        save: function () {
+            $.ajax({
+                url: "@Url.Action("Save")",
+                type: "post",
+                data: ko.toJSON(this),
+                contentType: "application/json",
+                success: function (result) { alert(result.message) }
+            });
+        }
+    };
+    viewModel.fullName = ko.dependentObservable(function () {
+        return this.firstName() + " " + this.lastName();
+    }, viewModel);
+
+    ko.applyBindings(viewModel);
+</script>
